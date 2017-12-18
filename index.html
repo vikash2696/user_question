@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
    <head>
-   <link rel="stylesheet" type="text/css" href="../style.css">
+   <link rel="stylesheet" type="text/css" href="css/style.css">
       <title>Hello world</title>
    </head>
    
@@ -14,20 +14,28 @@
       var user;
       socket.on('validuser', function(data) {
          user = 'vikash';
-         document.body.innerHTML = '<input type = "text" id = "message">\
-         <button type = "button" name = "button" onclick = "sendMessage()">Send</button>\
-         <div id = "message-container"></div>';
+         document.body.innerHTML = '<h3 style="text-align:left;" >Question Form</h3>\
+         <div id="question_form_div">\
+         <form name="question_form" method="post">\
+         <label for="title">Category : </label><input type = "text" class = "input_class" id = "category">\
+         <label for="title">Question : </label> <input type = "text" class = "input_class" id = "question">\
+         <label for="title">Answer : </label>  <textarea rows="6" cols="50" class = "input_class" name="comment"></textarea>\
+         <br /><button type = "button" class = "input_class" name = "button" onclick = "sendQuestion()">Send</button>\
+         </form> </div>\
+         <div id = "question-container"></div>';
       });
-      function sendMessage() {
-         var msg = document.getElementById('message').value;
-         if(msg) {
-            socket.emit('msg', {message: msg, user: user});
+      function sendQuestion() {
+         var question = document.getElementById('question').value;
+
+         if(question) {
+            socket.emit('question', {question: question, user: user});
          }
+         document.getElementById('question').value = '';
       }
-      socket.on('newmsg', function(data) {
+      socket.on('newquestion', function(data) {
          if(user) {
-            document.getElementById('message-container').innerHTML += '<div><b>' + 
-               data.user + '</b>: ' + data.message + '</div>'
+            document.getElementById('question-container').innerHTML += '<div><b>' + 
+               data.user + '</b>: ' + data.question + '</div>'
          }
       })
    </script>
