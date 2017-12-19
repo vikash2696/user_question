@@ -8,40 +8,62 @@
    <script src = "https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <script>
       var socket = io();
-      function setUsername() {
-         socket.emit('setUsername', document.getElementById('name').value);
-      };
       var user;
-      socket.on('validuser', function(data) {
+      socket.on('questionList', function(data) {
          user = 'vikash';
+         console.log(data);
+         var questionTable = "<table ><tr><th>Category</th><th>Question</th><th>Answer</th><th>Action</th></tr></table>";
+         questionTable +="<table id='table_id'>";
+         var i;
+         for (i = 0; i < data.length; i++) {
+             questionTable += "<tr><td>" + data[i].category + "</td>"+"<td>" + data[i].question + "</td>"+"<td>" + data[i].answer + "</td>" + "<td onclick ='editQuestion(\""+data[i]._id+"\");'>" + "Edit" + "</td></tr>";
+         }
+         questionTable +="</table>";
+
          document.body.innerHTML = '<h3 style="text-align:left;" >Question Form</h3>\
          <div id="question_form_div">\
-         <form name="question_form" method="post">\
-         <label for="title">Category : </label><input type = "text" class = "input_class" id = "category">\
-         <label for="title">Question : </label> <input type = "text" class = "input_class" id = "question">\
-         <label for="title">Answer : </label>  <textarea rows="6" cols="50" class = "input_class" name="comment"></textarea>\
-         <br /><button type = "button" class = "input_class" name = "button" onclick = "sendQuestion()">Send</button>\
+         <form name="question_form" id = "question_form" method="post">\
+         <label for="title">Category : </label><input type = "text" class = "input_class" id = "category" name="category">\
+         <label for="title">Question : </label> <input type = "text" class = "input_class" id = "question" name="question">\
+         <label for="title">Answer : </label>  <textarea rows="6" cols="50" class = "input_class" name="answer"></textarea>\
+         <br /><button type = "button" class = "input_class" onclick = "sendQuestion()">Send</button>\
          </form> </div>\
-         <div id = "question-container"></div>';
+         <div id = "question-container">\
+         </div>';
+         document.getElementById('question-container').innerHTML =questionTable;
       });
-      function sendQuestion() {
-         var question = document.getElementById('question').value;
 
-         if(question) {
-            socket.emit('question', {question: question, user: user});
+      function sendQuestion() {
+         var formdata = document.getElementById("question_form").elements;
+         var question_data ={};
+         for(var i = 0 ; i < formdata.length ; i++){
+            var item = formdata.item(i);
+            question_data[item.name] = item.value;
          }
-         document.getElementById('question').value = '';
+         if(question) {
+            socket.emit('question', {question: question_data.question, 
+               user: user,
+               answer:question_data.answer,
+               category:question_data.category
+            });
+         }
+         document.getElementById("question_form").reset();
+      }
+
+      function editQuestion(id)
+      {
+         if(id) {
+            socket.emit('editQuestiondata', { question_id: id });
+         }
       }
       socket.on('newquestion', function(data) {
          if(user) {
-            document.getElementById('question-container').innerHTML += '<div><b>' + 
-               data.user + '</b>: ' + data.question + '</div>'
+            var newQ = "<tr class='tr_class'><td>" + data.category + "</td>"+"<td>" + data.question + "</td>"+"<td>" + data.answer + "</td></tr>";
+            document.getElementById('table_id').innerHTML = newQ + document.getElementById('table_id').innerHTML;
          }
       })
    </script>
    
    <body>
-     
-
-   </body>
+   <div id="bababbab"></div>
 </html>

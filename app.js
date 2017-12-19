@@ -3,16 +3,6 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 //user service
-var Users = require('./service/questionService');
-var routes = require('./routes/index');
-
-var bodyParser = require('body-parser');
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-
-app.set('views', __dirname + '/views');
-app.set('view engine', 'html');
-
 app.use(express.static(__dirname + '/public'));
 
 //Mongo DB credentials
@@ -38,16 +28,20 @@ app.get('/', function(req, res) {
    res.sendfile('index.html');
 });
 
-app.use('/user',routes);
-
-
 users = [];
 io.on('connection', function(socket) {
 
-   socket.emit('validuser','true');
+  //Get all records 
+   Questions.find({},function(err,allquestion){
+            if(err) {
+                return false;
+            }
+            socket.emit('questionList',allquestion);
+        }).sort({updated_at: -1});
+  
 
    socket.on('question', function(data) {
-      //Send message to everyone
+      //Save question
         io.sockets.emit('newquestion', data);
            Questions.create({
             category: data.category,
@@ -63,6 +57,18 @@ io.on('connection', function(socket) {
          });
 
       });
+
+   socket.on('editQuestiondata', function(data) {
+        //update question
+        let id = data.question_id;
+        Questions.findById(id,function(err,question){
+            if(err) {
+                return false;
+            }
+            socket.emit('editquestion',question);
+        });
+      });
+
 });
 
 http.listen(3018, function() {
