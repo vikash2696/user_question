@@ -9,39 +9,51 @@
     <script>
       var socket = io();
       var user;
+      
+      socket.on('editQuestiondata', function(data){
+         // document.getElementById('question_div').innerHTML =formHtml;
+         document.getElementById('category').value =data.category;
+         document.getElementById('question').value =data.question;
+         document.getElementById('answer').value =data.answer;
+         document.getElementById('question_id').value =data._id;
+      });
+
+      var formHtml = '<h3 style="text-align:left;" >Question Form</h3>\
+         <div id="question_form_div">\
+         <form name="question_form" id = "question_form" method="post">\
+         <input type = "hidden" id = "question_id" name="question_id">\
+         <label for="title">Category : </label><input type = "text" class = "input_class" id = "category" name="category">\
+         <label for="title">Question : </label> <input type = "text" class = "input_class" id = "question" name="question">\
+         <label for="title">Answer : </label>  <textarea rows="6" cols="50" class = "input_class" name="answer" id="answer"></textarea>\
+         <br /><button type = "button" class = "input_class" onclick = "saveQuestion()">Send</button>\
+         </form> </div>';
+
+
       socket.on('questionList', function(data) {
          user = 'vikash';
-         console.log(data);
          var questionTable = "<table ><tr><th>Category</th><th>Question</th><th>Answer</th><th>Action</th></tr></table>";
          questionTable +="<table id='table_id'>";
          var i;
          for (i = 0; i < data.length; i++) {
-             questionTable += "<tr><td>" + data[i].category + "</td>"+"<td>" + data[i].question + "</td>"+"<td>" + data[i].answer + "</td>" + "<td onclick ='editQuestion(\""+data[i]._id+"\");'>" + "Edit" + "</td></tr>";
+             questionTable += "<tr id=\""+data[i]._id+"\"><td>" + data[i].category + "</td>"+"<td>" + data[i].question + "</td>"+"<td>" + data[i].answer + "</td>" + "<td><span onclick ='editQuestion(\""+data[i]._id+"\");'>" + "Edit " + "</span><span onclick ='deleteQuestion(\""+data[i]._id+"\","+i+");'>" + " Delete" + "</span></td></tr>";
          }
          questionTable +="</table>";
-
-         document.body.innerHTML = '<h3 style="text-align:left;" >Question Form</h3>\
-         <div id="question_form_div">\
-         <form name="question_form" id = "question_form" method="post">\
-         <label for="title">Category : </label><input type = "text" class = "input_class" id = "category" name="category">\
-         <label for="title">Question : </label> <input type = "text" class = "input_class" id = "question" name="question">\
-         <label for="title">Answer : </label>  <textarea rows="6" cols="50" class = "input_class" name="answer"></textarea>\
-         <br /><button type = "button" class = "input_class" onclick = "sendQuestion()">Send</button>\
-         </form> </div>\
-         <div id = "question-container">\
-         </div>';
-         document.getElementById('question-container').innerHTML =questionTable;
+         document.getElementById('question_div').innerHTML =formHtml;
+         document.getElementById('table_data_div').innerHTML =questionTable;
       });
 
-      function sendQuestion() {
+      function saveQuestion() {
          var formdata = document.getElementById("question_form").elements;
+         // console.log(formdata);
          var question_data ={};
          for(var i = 0 ; i < formdata.length ; i++){
             var item = formdata.item(i);
             question_data[item.name] = item.value;
          }
          if(question) {
-            socket.emit('question', {question: question_data.question, 
+            socket.emit('question', {
+               question_id : question_data.question_id,
+               question: question_data.question, 
                user: user,
                answer:question_data.answer,
                category:question_data.category
@@ -50,20 +62,37 @@
          document.getElementById("question_form").reset();
       }
 
+      socket.on('newquestion', function(data) {
+         if(user) {
+            var newQ = "<tr class='tr_class'><td>" + data.category + "</td>"+"<td>" + data.question + "</td>"+"<td>" + data.answer + "</td>" +"<td onclick ='editQuestion(\""+data._id+"\");'>" + "Edit" + "</td></tr>";
+            document.getElementById('table_id').innerHTML = newQ + document.getElementById('table_id').innerHTML;
+         }
+      });
+
+      socket.on('deleted', function(data) {
+         if(data._id) {
+            var element = document.getElementById(data._id); 
+            element.parentNode.removeChild(element);
+         }
+      });
+
       function editQuestion(id)
       {
          if(id) {
-            socket.emit('editQuestiondata', { question_id: id });
+            socket.emit('editQuestion', { question_id: id });
          }
       }
-      socket.on('newquestion', function(data) {
-         if(user) {
-            var newQ = "<tr class='tr_class'><td>" + data.category + "</td>"+"<td>" + data.question + "</td>"+"<td>" + data.answer + "</td></tr>";
-            document.getElementById('table_id').innerHTML = newQ + document.getElementById('table_id').innerHTML;
+      function deleteQuestion(id,r)
+      {
+         if(id) {
+            if (confirm("Are you sure !!!") == true) {
+                 socket.emit('deleteQuestion', { question_id: id });
+             } 
          }
-      })
+      }
    </script>
    
    <body>
-   <div id="bababbab"></div>
+   <div id="question_div"></div>
+   <div id="table_data_div"></div>
 </html>

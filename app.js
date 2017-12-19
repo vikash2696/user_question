@@ -42,33 +42,54 @@ io.on('connection', function(socket) {
 
    socket.on('question', function(data) {
       //Save question
-        io.sockets.emit('newquestion', data);
-           Questions.create({
+       var saveQuestiondata = { 
             category: data.category,
             question: data.question,
             answer: data.answer,
             status: 'active',
             author: data.user
-         },function(err,saveduser){
+      };
+      if(data.question_id) {
+            Questions.findByIdAndUpdate(data.question_id,saveQuestiondata, function(err,savedquestion){
+            if(err) {
+                return  false;
+            }
+            io.socket.emit('newquestion',savedquestion);
+            return true;
+        });
+      }else {
+           Questions.create(saveQuestiondata ,function(err,savedquestion){
             if(err) {
                return  false;
             }
+            io.socket.emit('newquestion',savedquestion);
             return true;
          });
+      }
 
       });
 
-   socket.on('editQuestiondata', function(data) {
+   socket.on('editQuestion', function(data) {
         //update question
         let id = data.question_id;
         Questions.findById(id,function(err,question){
             if(err) {
                 return false;
             }
-            socket.emit('editquestion',question);
+            io.socket.emit('editQuestiondata',question);
+        });
+    });
+
+    socket.on('deleteQuestion', function(data) {
+        //update question
+        let id = data.question_id;
+        Questions.findByIdAndRemove(id,function(err,question){
+            if(err) {
+                return false;
+            }
+            io.socket.emit('deleted',question);
         });
       });
-
 });
 
 http.listen(3018, function() {
