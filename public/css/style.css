@@ -25,6 +25,7 @@ td, th {
 tr:nth-child(even) {
     background-color: #dddddd;
 }
-/*.tr_class{
-  width: 100px;
-}*/
+#table_data_div {
+  border-style: solid;
+  border: 2px black;
+}

@@ -2,16 +2,20 @@
 <html>
    <head>
    <link rel="stylesheet" type="text/css" href="css/style.css">
-      <title>Hello world</title>
+   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+      <title>Question World</title>
+      <script src = "https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+   <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
    </head>
    
-   <script src = "https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+   
     <script>
       var socket = io();
       var user;
       
       socket.on('editQuestiondata', function(data){
-         // document.getElementById('question_div').innerHTML =formHtml;
+         document.getElementById('question_div').innerHTML =formHtml;
          document.getElementById('category').value =data.category;
          document.getElementById('question').value =data.question;
          document.getElementById('answer').value =data.answer;
@@ -31,20 +35,18 @@
 
       socket.on('questionList', function(data) {
          user = 'vikash';
-         var questionTable = "<table ><tr><th>Category</th><th>Question</th><th>Answer</th><th>Action</th></tr></table>";
-         questionTable +="<table id='table_id'>";
+         var questionTable = "<tbody id='table_body'>";
          var i;
          for (i = 0; i < data.length; i++) {
              questionTable += "<tr id=\""+data[i]._id+"\"><td>" + data[i].category + "</td>"+"<td>" + data[i].question + "</td>"+"<td>" + data[i].answer + "</td>" + "<td><span onclick ='editQuestion(\""+data[i]._id+"\");'>" + "Edit " + "</span><span onclick ='deleteQuestion(\""+data[i]._id+"\","+i+");'>" + " Delete" + "</span></td></tr>";
          }
-         questionTable +="</table>";
+         questionTable += "</tbody>";
          document.getElementById('question_div').innerHTML =formHtml;
-         document.getElementById('table_data_div').innerHTML =questionTable;
+         document.getElementById('table_id').innerHTML =questionTable;
       });
 
       function saveQuestion() {
          var formdata = document.getElementById("question_form").elements;
-         // console.log(formdata);
          var question_data ={};
          for(var i = 0 ; i < formdata.length ; i++){
             var item = formdata.item(i);
@@ -65,7 +67,7 @@
       socket.on('newquestion', function(data) {
          if(user) {
             var newQ = "<tr class='tr_class'><td>" + data.category + "</td>"+"<td>" + data.question + "</td>"+"<td>" + data.answer + "</td>" +"<td onclick ='editQuestion(\""+data._id+"\");'>" + "Edit" + "</td></tr>";
-            document.getElementById('table_id').innerHTML = newQ + document.getElementById('table_id').innerHTML;
+            document.getElementById('table_body').innerHTML = newQ + document.getElementById('table_body').innerHTML;
          }
       });
 
@@ -94,5 +96,21 @@
    
    <body>
    <div id="question_div"></div>
-   <div id="table_data_div"></div>
+   <div id="table_data_div">
+      <table id="table_id" class="display" cellspacing="0" width="100%">
+         <thead><tr><th>Category</th><th>Question</th><th>Answer</th><th>Action</th></tr></thead>
+      </table>
+   </div>
+   <script type="text/javascript">
+      $(document).ready(function() {
+         $('#table_id').DataTable( {
+            bSort: false,
+
+            aoColumns: [ { bSearchable: false, bSortable: false } ],
+        "scrollY":        "400px",
+        "paging":         true
+    } );
+      });
+
+   </script>
 </html>

@@ -76,7 +76,7 @@ io.on('connection', function(socket) {
             if(err) {
                 return false;
             }
-            io.socket.emit('editQuestiondata',question);
+            socket.emit('editQuestiondata',question);
         });
     });
 
